@@ -26,13 +26,6 @@ inline uint8_t gpio_get(uint32_t gpio_n);
 #define FUNCTION_SIO 5
 
 
-#define PADS_BANK0_BASE             0x4001C000
-
-#define PADS_BANK0_GPIO25_RW        (PADS_BANK0_BASE+ 0x68 + 0x0000)
-#define PADS_BANK0_GPIO25_XOR       (PADS_BANK0_BASE+ 0x68 + 0x1000)
-#define PADS_BANK0_GPIO25_SET       (PADS_BANK0_BASE+ 0x68 + 0x2000)
-#define PADS_BANK0_GPIO25_CLR       (PADS_BANK0_BASE+ 0x68 + 0x3000)
-                                                            
 #define IO_BANK0_BASE               0x40014000              
 #define GPIO_XOR 0x1000
 #define GPIO_SET 0x2000
