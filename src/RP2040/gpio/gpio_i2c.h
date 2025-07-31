@@ -11,6 +11,7 @@ void set_I2C0_TAR( uint32_t target_address);
 
 Error write_bytearray_i2c(uint32_t target_address, uint8_t* msg, size_t msg_len);
 Error write_byte_i2c(uint32_t target_address, uint8_t msg);
+Error write_stop_i2c();
 
 Error configure_pads_I2C0(uint32_t sda_pin, uint32_t scl_pin);
 Error configure_pads_I2C1(uint32_t sda_pin, uint32_t scl_pin);
@@ -19,23 +20,10 @@ Error configure_pins_I2C0(uint32_t sda_pin, uint32_t scl_pin);
 Error configure_pins_I2C1(uint32_t sda_pin, uint32_t scl_pin);
 
 uint8_t slave_address_available(uint8_t addr);
-void scan_addresses();
+uint8_t scan_addresses(uint32_t sda_pin, uint32_t scl_pin);
 
 #define NUM_I2C0_WIRE_PINS 8
-const uint32_t I2C0_SDA_PINS[NUM_I2C0_WIRE_PINS] = {
-    0, 4, 8, 12, 16, 20, 24, 28
-};
-const uint32_t I2C0_SCL_PINS[NUM_I2C0_WIRE_PINS] = {
-    1, 5, 9, 13, 17, 21, 25, 29
-};
-
 #define NUM_I2C1_WIRE_PINS 7
-const uint32_t I2C1_SDA_PINS[NUM_I2C1_WIRE_PINS] = {
-    2, 6, 10, 14, 18, 22, 26
-};
-const uint32_t I2C1_SCL_PINS[NUM_I2C1_WIRE_PINS] = {
-    3, 7, 11, 15, 19, 23, 27
-};
 
 #define I2C0_BASE               0x40044000
 

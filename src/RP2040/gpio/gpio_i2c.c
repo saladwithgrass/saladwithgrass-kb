@@ -1,9 +1,22 @@
 #include "gpio_i2c.h"
-#include "../gpio/gpio.h"
+#include "../../debug_matrix/debug_matrix.h"
 #include "../pads/pads.h"
 #include "../../errors/errors.h"
 #include <stddef.h>
 #include <stdint.h>
+
+const uint32_t I2C0_SDA_PINS[NUM_I2C0_WIRE_PINS] = {
+    0, 4, 8, 12, 16, 20, 24, 28
+};
+const uint32_t I2C0_SCL_PINS[NUM_I2C0_WIRE_PINS] = {
+    1, 5, 9, 13, 17, 21, 25, 29
+};
+const uint32_t I2C1_SDA_PINS[NUM_I2C1_WIRE_PINS] = {
+    2, 6, 10, 14, 18, 22, 26
+};
+const uint32_t I2C1_SCL_PINS[NUM_I2C1_WIRE_PINS] = {
+    3, 7, 11, 15, 19, 23, 27
+};
 
 void configure_I2C0() {
     // disable i2c0
@@ -120,12 +133,14 @@ Error write_bytearray_i2c(uint32_t target_address, uint8_t *msg, size_t msg_len)
     if (!(GET32(I2C0_ENABLE_STATUS) & 1))
         return ERROR_HARDWARE_MISCONFIGURATION;
     set_I2C0_TAR(target_address);
-    for (size_t iter = 0; iter < msg_len; ++iter) {
-        PUT32(I2C0_DATA_CMD, msg[iter] | (1<<9));
+    size_t iter;
+    for (iter = 0; iter < msg_len - 1; ++iter) {
+        PUT32(I2C0_DATA_CMD, msg[iter]);
         while (GET32(I2C0_TXFLR) & 1) {}
-
     }
-    
+    // write last byte with STOP enabled
+    PUT32(I2C0_DATA_CMD, msg[iter] | (1<<9));
+    return ERROR_OK;
 }
 
 uint8_t slave_address_available(uint8_t addr) {
@@ -136,7 +151,7 @@ uint8_t slave_address_available(uint8_t addr) {
     PUT32(I2C0_DATA_CMD, (addr << 1) & 0xFE); // 7-bit address + write bit (0)
 
     // Wait for transmission to complete (TX_EMPTY)
-    uint32_t timeout = 10000;
+    uint32_t timeout = 100000;
     while (--timeout)
         if (GET32(I2C0_RAW_INTR_STAT) & (1<<5)) break;
 
@@ -150,4 +165,17 @@ uint8_t slave_address_available(uint8_t addr) {
     
     // ABRT_TXDATA_NOACK = Bit 3 (0x08)
     return !(abort_source & 0x08);
+}
+
+uint8_t scan_addresses(uint32_t sda_pin, uint32_t scl_pin) {
+
+    configure_pins_I2C0(sda_pin, scl_pin);
+    configure_pads_I2C0(sda_pin, scl_pin);
+    for (uint8_t current_address = 0; current_address < ((1<<7) - 1); ++current_address) {
+        display_number(current_address);
+        if (slave_address_available(current_address))
+            return current_address;
+    }
+
+    return 255;
 }

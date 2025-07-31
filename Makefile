@@ -75,7 +75,7 @@ $(BIN_DIR)/%.o : $(SRC_DIR)/%.c
 	$(ARMGNU)-gcc $(CFLAGS) -mthumb -c $^ -o $@
 
 # build binary
-$(TARGET).bin : $(MEMMAP_SRC) $(BOOTLOADER_OBJ) $(KEYBOARD_OBJS) $(RP2040_OBJS)
+$(TARGET).bin : $(MEMMAP_SRC) $(BOOTLOADER_OBJ) $(KEYBOARD_OBJS) $(RP2040_OBJS) $(DEBUG_MATRIX_OBJS)
 	@echo ""
 	@echo "----------------------------------"
 	@echo "BUIDING TARGET BINARY"

@@ -1,5 +1,5 @@
 #include "../RP2040/RP2040.h"
-// #include "../debug_matrix/debug_matrix.h"
+#include "../debug_matrix/debug_matrix.h"
 #include "keyboard_config.h"
 #include <stdint.h>
 
@@ -13,10 +13,14 @@ int notmain ( void ) {
     uint32_t input_pins_bytes = 0;
 
     // configure_pins_debug_matrix();
-    init_gpio_sio(1<<25, 0);
-    // PUT32(SIO_GPIO_OUT_SET, (1<<25));
-    // display_number(0b10110011);
-    // return 0;
+    init_gpio_sio(1<<23, 0);
+    PUT32(SIO_GPIO_OUT_SET, (1<<23));
+    display_number(255);
+    uint8_t found_address = scan_addresses(0, 1);
+    display_number(0);
+    delay(100);
+    display_number(found_address);
+    return 0;
 
     // load configuration
     for (ra = 0; ra < N_OUTPUT_PINS; ++ra)
@@ -26,9 +30,10 @@ int notmain ( void ) {
         input_pins_bytes = input_pins_bytes | (1 << INPUT_PINS[ra]);
 
     init_gpio_sio(output_pins_bytes, input_pins_bytes);
+    PUT32(SIO_GPIO_OUT_SET, 1<<DEBUG_PIN);
+    PUT32(SIO_GPIO_OUT_SET, (1<<OUTPUT_PINS[0]));
 
     // enable output for this pin
-    PUT32(SIO_GPIO_OUT_SET, (1<<OUTPUT_PINS[0]));
     for (ra = 0; ra < 1000; ra++) {
         if (gpio_get(INPUT_PINS[0])){
             PUT32(SIO_GPIO_OUT_SET, 1<<DEBUG_PIN);
