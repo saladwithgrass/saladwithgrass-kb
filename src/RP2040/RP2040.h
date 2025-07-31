@@ -3,7 +3,8 @@
 
 #include "general_defines.h"
 #include "resets.h"
-#include "gpio.h"
-#include "clocks.h"
+#include "gpio/gpio.h"
+#include "clocks/clocks.h"
+#include "pads/pads.h"
 
 #endif // !RP2040_H

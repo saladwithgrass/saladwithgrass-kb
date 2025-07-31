@@ -15,17 +15,21 @@ SRC_DIR = src
 BIN_DIR = bin
 RP2040_DIR = $(SRC_DIR)/RP2040
 KEYBOARD_DIR = $(SRC_DIR)/keyboard
+DEBUG_MATRIX_DIR = $(SRC_DIR)/debug_matrix
 
 # source files
 KEYBOARD_SRC =  $(wildcard $(KEYBOARD_DIR)/*.c)
-RP2040_SRC = $(wildcard $(RP2040_DIR)/*.c)
+RP2040_SRC = $(wildcard $(RP2040_DIR)/*.c) $(wildcard $(RP2040_DIR)/*/*.c)
 MAKEU2F_SRC = $(SRC_DIR)/makeuf2f.c
 BOOTLOADER_SRC = $(SRC_DIR)/start.s
 MEMMAP_SRC = $(SRC_DIR)/memmap.ld
+DEBUG_MATRIX_SRC = $(wildcard $(DEBUG_MATRIX_DIR)/*.c)
 
 RP2040_OBJS = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(RP2040_SRC))
 KEYBOARD_OBJS = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(KEYBOARD_SRC))
+DEBUG_MATRIX_OBJS = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(DEBUG_MATRIX_SRC))
 BOOTLOADER_OBJ = $(BIN_DIR)/start.o
+# ALL_OBJS = $(RP2040_OBJS) $(KEYBOARD_OBJS) $(DEBUG_MATRIX_OBJS) $(BOOTLOADER_OBJ)
 
 all : build
 

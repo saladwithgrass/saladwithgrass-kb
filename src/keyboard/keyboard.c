@@ -1,4 +1,5 @@
 #include "../RP2040/RP2040.h"
+// #include "../debug_matrix/debug_matrix.h"
 #include "keyboard_config.h"
 #include <stdint.h>
 
@@ -10,6 +11,13 @@ int notmain ( void ) {
 
     uint32_t output_pins_bytes = 0;
     uint32_t input_pins_bytes = 0;
+
+    // configure_pins_debug_matrix();
+    init_gpio_sio(1<<25, 0);
+    // PUT32(SIO_GPIO_OUT_SET, (1<<25));
+    // display_number(0b10110011);
+    // return 0;
+
     // load configuration
     for (ra = 0; ra < N_OUTPUT_PINS; ++ra)
         output_pins_bytes = output_pins_bytes | (1 << OUTPUT_PINS[ra]);
