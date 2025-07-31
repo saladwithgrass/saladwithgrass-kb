@@ -2,6 +2,8 @@
 #include "../RP2040/RP2040.h"
 #include <stdint.h>
 
+uint8_t LCD_STATE = 0x08;
+
 Error lcd_state_update() {
     Error write_result = write_byte_i2c(LCD_ADDRESS, LCD_STATE);
     if (write_result != ERROR_OK) {
