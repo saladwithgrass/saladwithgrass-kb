@@ -33,7 +33,7 @@ DEBUG_MATRIX_OBJS = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(DEBUG_MATRIX_SRC)
 LCD_I2C_OBJS = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(LCD_I2C_SRC))
 BOOTLOADER_OBJ = $(BIN_DIR)/start.o
 
-ALL_OBJS = $(RP2040_OBJS) $(KEYBOARD_OBJS) $(DEBUG_MATRIX_OBJS) $(BOOTLOADER_OBJ) $(LCD_I2C_OBJS)
+ALL_OBJS = $(BOOTLOADER_OBJ) $(KEYBOARD_OBJS) $(RP2040_OBJS) $(DEBUG_MATRIX_OBJS)
 
 all : build
 
@@ -79,9 +79,12 @@ $(BIN_DIR)/%.o : $(SRC_DIR)/%.c
 	$(ARMGNU)-gcc $(CFLAGS) -mthumb -c $^ -o $@
 
 # build binary
+# $(TARGET).bin : $(MEMMAP_SRC) $(ALL_OBJS)
+# $(BOOTLOADER_OBJ) $(KEYBOARD_OBJS) $(RP2040_OBJS) $(DEBUG_MATRIX_OBJS)
 $(TARGET).bin : $(MEMMAP_SRC) $(ALL_OBJS)
 	@echo ""
 	@echo "----------------------------------"
+	@echo $(ALL_OBJS)
 	@echo "BUIDING TARGET BINARY"
 	$(ARMGNU)-ld $(LDFLAGS) -T $^ -o $(TARGET).elf
 	$(ARMGNU)-objdump -D $(TARGET).elf > $(TARGET).list
