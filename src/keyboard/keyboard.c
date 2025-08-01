@@ -13,8 +13,9 @@ int notmain ( void ) {
     uint32_t input_pins_bytes = 0;
 
     // configure_pins_debug_matrix();
-    init_gpio_sio(1<<23, 0);
-    PUT32(SIO_GPIO_OUT_SET, (1<<23));
+    init_gpio_sio(1<<25, 0);
+    PUT32(SIO_GPIO_OUT_SET, (1<<25));
+    delay(100);
     display_number(255);
     uint8_t found_address = scan_addresses(0, 1);
     display_number(0);
