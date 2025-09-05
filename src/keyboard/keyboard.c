@@ -3,6 +3,8 @@
 #include "keyboard_config.h"
 #include <stdint.h>
 
+// here i made some changes
+
 int notmain ( void ) {
     unsigned int ra;
 
