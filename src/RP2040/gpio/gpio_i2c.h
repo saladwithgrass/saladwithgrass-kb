@@ -76,4 +76,10 @@ uint8_t scan_addresses(uint32_t sda_pin, uint32_t scl_pin);
 #define I2C_CON_SPEED_FAST      0x2
 #define I2C_CON_SPEED_HIGH      0x3
 
+#define I2C_CON_MASTER_MODE_BITS 0x00000001
+#define I2C_CON_SLAVE_DISABLE_BITS 0x00000040
+#define I2C_CON_RESTART_EN_BITS 0x00000020
+#define I2C_CON_TX_EMPTY_CTRL_BITS 0x00000100
+
+
 #endif // !GPIO_I2C_H_
