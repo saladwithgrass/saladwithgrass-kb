@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 void configure_I2C0( void );
+void set_I2C0_baud_rate(uint8_t baudrate);
 void set_I2C0_TAR( uint32_t target_address);
 
 Error write_bytearray_i2c(uint32_t target_address, uint8_t* msg, size_t msg_len);

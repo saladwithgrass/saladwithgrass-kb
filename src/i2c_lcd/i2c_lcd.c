@@ -9,17 +9,17 @@ Error lcd_state_update() {
     if (write_result != ERROR_OK) {
         return write_result;
     }
-    delay(100); 
+    delay_ms(100); 
     return ERROR_OK;
 }
 
 void lcd_pulse_e() {
     LCD_STATE |= (1 << 6); // E=1
     lcd_state_update();
-    delay(1);           // tPW ≥ 230ns
+    delay_ms(1);           // tPW ≥ 230ns
     LCD_STATE &= ~(1 << 6); // E=0
     lcd_state_update();
-    delay(1);
+    delay_ms(1);
 }
 
 void lcd_send_half_byte(uint8_t half_byte) {
@@ -34,16 +34,16 @@ void lcd_send_byte(uint8_t byte, uint8_t is_data) {
 
     lcd_send_half_byte(byte>>4);
     lcd_send_half_byte(byte & 0x0F);
-    delay(50);
+    delay_ms(50);
 }
 
 // Initialize LCD (4-bit mode)
 void lcd_init() {
-    delay(15000); // >15ms after power-on
+    delay_ms(15000); // >15ms after power-on
     
     // 1. Initialize sequence (must use 8-bit mode first)
-    lcd_send_half_byte(0x03); delay(4100); // >4.1ms
-    lcd_send_half_byte(0x03); delay(100);  // >100µs
+    lcd_send_half_byte(0x03); delay_ms(4100); // >4.1ms
+    lcd_send_half_byte(0x03); delay_ms(100);  // >100µs
     lcd_send_half_byte(0x03); 
     lcd_send_half_byte(0x02); // Switch to 4-bit mode
     
@@ -58,7 +58,7 @@ void lcd_init() {
     
     // 5. Clear display
     lcd_send_byte(0x01, 0); // 0000 0001
-    delay(2000); // Clear takes 1.52ms
+    delay_ms(2000); // Clear takes 1.52ms
 }
 
 void lcd_print(const char* str) {
