@@ -9,7 +9,9 @@ inline void reset_subsystem(uint8_t subsytem) {
 inline void unreset_subsystem(uint8_t subsytem) {
     PUT32(RESETS_RESET_CLR, (1<<subsytem));
     // wait for rest to be done
-    while ( is_reset_done(subsytem) == 0 ) {}
+    while (1) {
+        if ( GET32(RESETS_RESET_DONE_RW) & (1<<subsytem) ) break;
+    }
 }
 
 inline uint8_t is_reset_done(uint8_t subsytem){
