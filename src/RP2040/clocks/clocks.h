@@ -4,7 +4,7 @@
 
 #define DEFAULT_SYS_KHZ 125000
 
-void delay_ms(unsigned int x);
+void delay(unsigned int x);
 void clock_init( void );
 
 #define CLOCKS_BASE                 0x40008000
