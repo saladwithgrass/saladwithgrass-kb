@@ -1,20 +1,14 @@
 #include "gpio.h"
 
-#include "../resets.h"
+#include "../resets/resets.h"
 #include <stddef.h>
 #include <stdint.h>
 
 void init_IOBANK0(void) {
 
-    // unreset pins
-    PUT32(RESETS_RESET_CLR, 1<<5); // IO_BANK0
+    unreset_subsystem(RESET_IO_BANK0);
 
-    // wait for reset to clear
-    while (1) {
-        if ( (GET32(RESETS_RESET_DONE_RW) & (1<<5)) != 0)
-            break;
-    }
-
+    unreset_subsystem(RESET_PADS_BANK0);
     // unreset pin pads
     PUT32(RESETS_RESET_CLR, (1<<8)); //PADS_BANK0
 

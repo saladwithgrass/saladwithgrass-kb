@@ -2,11 +2,11 @@
 #include "../resets/resets.h"
 #include <stdint.h>
 
-void delay ( unsigned int x ) {
-    unsigned int ra;
-    for (ra = 0; ra < x;) {
+void delay ( unsigned int ms ) {
+    unsigned int count = 0;
+    while (count < ms) {
         if ( (GET32(SYST_CSR) & (1 << 16)) != 0)
-            ra++;
+            count++;
     }
 }
 
