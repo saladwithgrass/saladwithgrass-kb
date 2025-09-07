@@ -2,9 +2,15 @@
 #define CLOCKS_H
 #include "../general_defines.h"
 
-#define DEFAULT_SYS_KHZ 125000
+#define XOSC_HZ         12000000UL
+#define DEFAULT_SYS_HZ  100000000UL
 
 void delay(unsigned int x);
+
+void init_xosc();
+void set_ref_clk_to_xosc( void );
+void init_plls();
+void set_sys_clk_to_pll( void );
 void clock_init( void );
 
 #define CLOCKS_BASE                 0x40008000
@@ -93,5 +99,9 @@ void clock_init( void );
 #define PLL_USB_PRIM_XOR            (PLL_USB_BASE+0x0c+0x1000)
 #define PLL_USB_PRIM_SET            (PLL_USB_BASE+0x0c+0x2000)
 #define PLL_USB_PRIM_CLR            (PLL_USB_BASE+0x0c+0x3000)
+
+#define PLL_SYS_PWR_PD_BITS         0x00000001
+#define PLL_SYS_PWR_VCOPD_BITS      0x00000020
+#define PLL_SYS_PWR_POSTDIVPD_BITS  0x00000008
 
 #endif // !CLOCKS_H
