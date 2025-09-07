@@ -1,4 +1,3 @@
-#include "../resets/resets.h"
 #include "gpio_i2c.h"
 #include "../../debug_matrix/debug_matrix.h"
 #include "../pads/pads.h"
@@ -19,19 +18,10 @@ const uint32_t I2C1_SCL_PINS[NUM_I2C1_WIRE_PINS] = {
     3, 7, 11, 15, 19, 23, 27
 };
 
-void configure_I2C0() { 
-    reset_subsystem(RESET_I2C0);
-    unreset_subsystem(RESET_I2C0);
+void configure_I2C0() {
     // disable i2c0
     PUT32(I2C0_ENABLE, 0);
     /*
-
-    i2c->hw->con =
-            I2C_IC_CON_SPEED_VALUE_FAST << I2C_IC_CON_SPEED_LSB |
-            I2C_IC_CON_MASTER_MODE_BITS |
-            I2C_IC_CON_IC_SLAVE_DISABLE_BITS |
-            I2C_IC_CON_IC_RESTART_EN_BITS |
-            I2C_IC_CON_TX_EMPTY_CTRL_BITS;
     uint32_t target_value = 0;
 
     // set mode to MASTER
@@ -51,17 +41,7 @@ void configure_I2C0() {
     // in the end
     target_value = 0b0001100011;
     */
-    const uint32_t I2C_CONNECTION_PARAMETERS = 
-        (I2C_CON_SPEED_FAST << 1) |
-        I2C_CON_MASTER_MODE_BITS |
-        I2C_CON_SLAVE_DISABLE_BITS |
-        I2C_CON_RESTART_EN_BITS |
-        I2C_CON_TX_EMPTY_CTRL_BITS;
-
-    PUT32(I2C0_CON, I2C_CONNECTION_PARAMETERS);
-    PUT32(I2C0_TX_TL, 0);
-    PUT32(I2C0_RX_TL, 0);
-
+    PUT32(I2C0_CON, 0b0001100011);
     // enable I2C0
     PUT32(I2C0_ENABLE, 1);
     while (1)
@@ -185,10 +165,6 @@ uint8_t slave_address_available(uint8_t addr) {
     
     // ABRT_TXDATA_NOACK = Bit 3 (0x08)
     return !(abort_source & 0x08);
-}
-
-void set_I2C0_baud_rate(uint8_t baudrate){
-    
 }
 
 uint8_t scan_addresses(uint32_t sda_pin, uint32_t scl_pin) {

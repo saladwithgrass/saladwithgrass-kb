@@ -8,7 +8,7 @@
 #define LCD_COLS    16
 #define LCD_ROWS    2
 
-extern uint8_t LCD_STATE;
+uint8_t LCD_STATE = 0x08; // P7=Backlight (1=on), P5=RW=0 (write)
 
 // kind of stop signal
 void lcd_pulse_e();

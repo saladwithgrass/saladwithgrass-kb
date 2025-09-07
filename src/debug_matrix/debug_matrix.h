@@ -1,6 +1,5 @@
 #ifndef DEBUG_MATRIX_H_
 #define DEBUG_MATRIX_H_
-#include <stddef.h>
 #include <stdint.h>
 
 #define N_BITS 8
@@ -30,9 +29,5 @@
 
 void display_number(uint8_t number);
 void configure_pins_debug_matrix();
-void blink_led25(size_t delay);
-void blink_led25_n_times(size_t delay, size_t n);
-void fast_n_blinks(size_t n);
-void slow_n_blinks(size_t n);
 
 #endif // !DEBUG_MATRIX_H_

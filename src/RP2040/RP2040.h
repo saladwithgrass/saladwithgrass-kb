@@ -2,7 +2,7 @@
 #define RP2040_H
 
 #include "general_defines.h"
-#include "resets/resets.h"
+#include "resets.h"
 #include "gpio/gpio.h"
 #include "gpio/gpio_i2c.h"
 #include "clocks/clocks.h"
