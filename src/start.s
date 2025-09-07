@@ -50,7 +50,7 @@ pool0:
 
 .thumb_func
 reset:
-    bl notmain
+    bl lcd_i2c_run_test 
     b loop
 
 .thumb_func

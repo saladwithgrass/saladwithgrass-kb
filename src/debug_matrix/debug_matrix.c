@@ -1,4 +1,5 @@
 #include "debug_matrix.h"
+#include "../RP2040/RP2040.h"
 #include "../RP2040/gpio/gpio.h"
 
 void display_number(uint8_t number) {
@@ -18,4 +19,21 @@ void display_number(uint8_t number) {
     
 void configure_pins_debug_matrix() {
 
+}
+
+void blink_led25(size_t blink_time) {
+    PUT32(SIO_GPIO_OUT_SET, (1<<25));
+    delay_ms(blink_time);
+    PUT32(SIO_GPIO_OUT_CLR, (1<<25));
+}
+
+void blink_led25_n_times(size_t blink_time, size_t n) {
+    for (int i = 0; i < n; ++i) {
+        blink_led25(blink_time);
+        delay_ms(blink_time);
+    }
+}
+
+void fast_n_blinks(size_t n) {
+    blink_led25_n_times(200, n);
 }

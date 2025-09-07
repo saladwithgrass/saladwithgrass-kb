@@ -3,6 +3,8 @@
 #include "keyboard_config.h"
 #include <stdint.h>
 
+// here i made some changes
+
 int notmain ( void ) {
     unsigned int ra;
 
@@ -19,7 +21,7 @@ int notmain ( void ) {
     display_number(255);
     uint8_t found_address = scan_addresses(0, 1);
     display_number(0);
-    delay(100);
+    delay_ms(100);
     display_number(found_address);
     return 0;
 
@@ -41,7 +43,7 @@ int notmain ( void ) {
         } else {
             PUT32(SIO_GPIO_OUT_CLR, 1<<DEBUG_PIN);
         }
-        delay(10);
+        delay_ms(10);
     }
 
 
