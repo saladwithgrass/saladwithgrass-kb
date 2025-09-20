@@ -1,8 +1,10 @@
 #include "../resets/resets.h"
+#include "../clocks/clocks.h"
 #include "gpio_i2c.h"
 #include "../../debug_matrix/debug_matrix.h"
 #include "../pads/pads.h"
 #include "../../errors/errors.h"
+#include <cstdint>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -19,37 +21,28 @@ const uint32_t I2C1_SCL_PINS[NUM_I2C1_WIRE_PINS] = {
     3, 7, 11, 15, 19, 23, 27
 };
 
+void enable_i2c() {
+    PUT32(I2C0_ENABLE, 1);
+    while (1)
+        if (GET32(I2C0_ENABLE_STATUS) & 1) break;
+}
+
+void disable_i2c() {
+    PUT32(I2C0_ENABLE, 0);
+}
+
 void configure_I2C0() { 
     reset_subsystem(RESET_I2C0);
     unreset_subsystem(RESET_I2C0);
     // disable i2c0
-    PUT32(I2C0_ENABLE, 0);
+    disable_i2c();
     /*
-
-    i2c->hw->con =
-            I2C_IC_CON_SPEED_VALUE_FAST << I2C_IC_CON_SPEED_LSB |
-            I2C_IC_CON_MASTER_MODE_BITS |
-            I2C_IC_CON_IC_SLAVE_DISABLE_BITS |
-            I2C_IC_CON_IC_RESTART_EN_BITS |
-            I2C_IC_CON_TX_EMPTY_CTRL_BITS;
-    uint32_t target_value = 0;
-
     // set mode to MASTER
-    target_value |= 0x1;
-
     // set speed to standard
-    target_value |= (I2C_CON_SPEED_STANDARD<<1);
-
     // master addressing is 7 bit by default
-
     // enabled restart condition
-    target_value |= (1<<5);
-
     // disable slave
-    target_value |= (1<<6);
-
     // in the end
-    target_value = 0b0001100011;
     */
     const uint32_t I2C_CONNECTION_PARAMETERS = 
         (I2C_CON_SPEED_FAST << 1) |
@@ -61,11 +54,30 @@ void configure_I2C0() {
     PUT32(I2C0_CON, I2C_CONNECTION_PARAMETERS);
     PUT32(I2C0_TX_TL, 0);
     PUT32(I2C0_RX_TL, 0);
+    // PUT32(I2C0_FS_SCL_HCNT, 60); // or I2C0_SS_SCL_HCNT for standard speed
+    // PUT32(I2C0_FS_SCL_LCNT, 130); // or I2C0_SS_SCL_LCNT for standard speed
 
-    // enable I2C0
-    PUT32(I2C0_ENABLE, 1);
-    while (1)
-        if (GET32(I2C0_ENABLE_STATUS) & 1) break;
+    uint32_t period = (DEFAULT_SYS_HZ + DEFAULT_BAUDRATE / 2) / DEFAULT_BAUDRATE;
+    uint32_t lcnt = period * 3 / 5; // oof this one hurts
+    uint32_t hcnt = period - lcnt;
+    uint32_t sda_tx_hold_count;
+    if (DEFAULT_BAUDRATE < 1000000) {
+        // sda_tx_hold_count = freq_in [cycles/s] * 300ns * (1s / 1e9ns)
+        // Reduce 300/1e9 to 3/1e7 to avoid numbers that don't fit in uint.
+        // Add 1 to avoid division truncation.
+        sda_tx_hold_count = ((DEFAULT_SYS_HZ * 3) / 10000000) + 1;
+    } else {
+        // sda_tx_hold_count = freq_in [cycles/s] * 120ns * (1s / 1e9ns)
+        // Reduce 120/1e9 to 3/25e6 to avoid numbers that don't fit in uint.
+        // Add 1 to avoid division truncation.
+        sda_tx_hold_count = ((DEFAULT_SYS_HZ * 3) / 25000000) + 1;
+    }
+    
+    PUT32(I2C0_FS_SCL_HCNT, hcnt);
+    PUT32(I2C0_FS_SCL_LCNT, lcnt);
+    PUT32(I2C0_FS_SPKLEN, lcnt < 16 ? 1 : lcnt / 16);
+
+    enable_i2c();
 }
 
 void set_I2C0_TAR(uint32_t target_address) {
@@ -140,26 +152,44 @@ Error configure_pins_I2C0(uint32_t sda_pin, uint32_t scl_pin) {
 }
 
 Error write_byte_i2c(uint32_t target_address, uint8_t msg) {
-    // check if I2C is running
-    if (!(GET32(I2C0_ENABLE_STATUS) & 1))
-        return ERROR_HARDWARE_MISCONFIGURATION;
-    set_I2C0_TAR(target_address);
-    PUT32(I2C0_DATA_CMD, msg | (1<<9));
-    while (GET32(I2C0_TXFLR) & 1) {}
-    return ERROR_OK;
+    uint8_t copy = msg;
+    // XXX OOOO SCARY MEMORY PROBLEMS
+    return write_bytearray_i2c(target_address, &msg, 1);
 }
 
 Error write_bytearray_i2c(uint32_t target_address, uint8_t *msg, size_t msg_len) {
+    // XXX OOOO SCARY MEMORY PROBLEMS
+
     if (!(GET32(I2C0_ENABLE_STATUS) & 1))
         return ERROR_HARDWARE_MISCONFIGURATION;
+
     set_I2C0_TAR(target_address);
+
     size_t iter;
-    for (iter = 0; iter < msg_len - 1; ++iter) {
-        PUT32(I2C0_DATA_CMD, msg[iter]);
-        while (GET32(I2C0_TXFLR) & 1) {}
+    uint8_t is_first;
+    uint8_t is_last;
+    uint32_t timeout;
+    for (iter = 0; iter < msg_len; ++iter) {
+        is_first = iter == 0;
+        is_last = iter == (msg_len - 1);
+        PUT32(I2C0_DATA_CMD, msg[iter] | 
+                ((!!is_first) << 10) |
+                ((!!is_last) << 9)
+        );
+        timeout = 10000;
+        while (timeout > 0 && 
+               GET32(I2C0_RAW_INTR_STAT) & 0x10) {
+            timeout--;
+        }
     }
-    // write last byte with STOP enabled
-    PUT32(I2C0_DATA_CMD, msg[iter] | (1<<9));
+
+    timeout = 10000;
+    while (timeout > 0 && 
+           !(I2C0_RAW_INTR_STAT & 0x200)) {
+        timeout--;
+    }
+    // // write last byte with STOP enabled
+    // PUT32(I2C0_DATA_CMD, msg[iter] | (1<<9));
     return ERROR_OK;
 }
 

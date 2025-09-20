@@ -3,7 +3,7 @@
 #include "../general_defines.h"
 
 #define XOSC_HZ         12000000UL
-#define DEFAULT_SYS_HZ  100000000UL
+#define DEFAULT_SYS_HZ  125000000UL
 
 void delay(unsigned int x);
 

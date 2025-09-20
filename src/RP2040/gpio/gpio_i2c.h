@@ -6,7 +6,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define DEFAULT_BAUDRATE (100*1000)
+
 void configure_I2C0( void );
+void enable_i2c();
+void disable_i2c();
 void set_I2C0_baud_rate(uint8_t baudrate);
 void set_I2C0_TAR( uint32_t target_address);
 

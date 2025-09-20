@@ -4,37 +4,25 @@
 
 uint8_t LCD_STATE = 0x08;
 
-Error lcd_state_update() {
-    Error write_result = write_byte_i2c(LCD_ADDRESS, LCD_STATE);
-    if (write_result != ERROR_OK) {
-        return write_result;
-    }
-    delay_ms(100); 
-    return ERROR_OK;
-}
-
-void lcd_pulse_e() {
-    LCD_STATE |= (1 << 6); // E=1
-    lcd_state_update();
-    delay_ms(1);           // tPW ≥ 230ns
-    LCD_STATE &= ~(1 << 6); // E=0
-    lcd_state_update();
-    delay_ms(1);
-}
-
-void lcd_send_half_byte(uint8_t half_byte) {
-    LCD_STATE = (LCD_STATE & 0xF0) | (half_byte & 0x0F);
-    lcd_state_update();
-    lcd_pulse_e();
+void lcd_toggle_enable(uint8_t val) {
+    // Toggle enable pin on LCD display
+    // We cannot do this too quickly or things don't work
+#define DELAY_US 600
+    sleep_us(DELAY_US);
+    i2c_write_byte(val | LCD_ENABLE_BIT);
+    sleep_us(DELAY_US);
+    i2c_write_byte(val & ~LCD_ENABLE_BIT);
+    sleep_us(DELAY_US);
 }
 
 void lcd_send_byte(uint8_t byte, uint8_t is_data) {
-    if (is_data) LCD_STATE |= (1<<4);
-    else         LCD_STATE &= ~(1<<4);
+    uint8_t high = is_data | (byte & 0xF0) | LCD_FLAG_BACKLIGHT;
+    uint8_t low = is_data | ((byte << 4) & 0xF0) | LCD_FLAG_BACKLIGHT;
 
-    lcd_send_half_byte(byte>>4);
-    lcd_send_half_byte(byte & 0x0F);
-    delay_ms(50);
+    write_byte_i2c(LCD_ADDRESS, high);
+    lcd_toggle_enable(high);
+    i2c_write_byte(low);
+    lcd_toggle_enable(low);
 }
 
 // Initialize LCD (4-bit mode)

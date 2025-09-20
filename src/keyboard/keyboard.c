@@ -1,9 +1,13 @@
 #include "../RP2040/RP2040.h"
+#include "../i2c_lcd/i2c_lcd.h"
 #include "../debug_matrix/debug_matrix.h"
 #include "keyboard_config.h"
 #include <stdint.h>
 
 int notmain ( void ) {
+
+    lcd_i2c_run_test();
+    return 0;
     unsigned int ra;
 
     clock_init();
@@ -17,6 +21,7 @@ int notmain ( void ) {
     PUT32(SIO_GPIO_OUT_SET, (1<<25));
     delay(100);
     display_number(255);
+    delay(1000);
     uint8_t found_address = scan_addresses(0, 1);
     display_number(0);
     delay(100);

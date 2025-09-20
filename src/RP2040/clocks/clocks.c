@@ -2,7 +2,7 @@
 #include "../resets/resets.h"
 #include <stdint.h>
 
-void delay ( unsigned int ms ) {
+void delay_ms ( unsigned int ms ) {
     unsigned int count = 0;
     while (count < ms) {
         if ( (GET32(SYST_CSR) & (1 << 16)) != 0)
