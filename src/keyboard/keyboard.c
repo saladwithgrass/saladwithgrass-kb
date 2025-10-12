@@ -8,6 +8,7 @@ int notmain ( void ) {
 
     lcd_i2c_run_test();
     return 0;
+
     unsigned int ra;
 
     clock_init();
@@ -19,12 +20,12 @@ int notmain ( void ) {
     // configure_pins_debug_matrix();
     init_gpio_sio(1<<25, 0);
     PUT32(SIO_GPIO_OUT_SET, (1<<25));
-    delay(100);
+    delay_ms(100);
     display_number(255);
-    delay(1000);
+    delay_ms(1000);
     uint8_t found_address = scan_addresses(0, 1);
     display_number(0);
-    delay(100);
+    delay_ms(100);
     display_number(found_address);
     return 0;
 
@@ -46,7 +47,7 @@ int notmain ( void ) {
         } else {
             PUT32(SIO_GPIO_OUT_CLR, 1<<DEBUG_PIN);
         }
-        delay(10);
+        delay_ms(10);
     }
 
 

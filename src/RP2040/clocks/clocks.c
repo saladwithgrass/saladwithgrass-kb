@@ -3,8 +3,12 @@
 #include <stdint.h>
 
 void delay_ms ( unsigned int ms ) {
+    delay_us(ms*1000);
+}
+
+void delay_us(unsigned int us) {
     unsigned int count = 0;
-    while (count < ms) {
+    while (count < us) {
         if ( (GET32(SYST_CSR) & (1 << 16)) != 0)
             count++;
     }
@@ -79,7 +83,7 @@ void clock_init ( void ) {
 
     // configure clocks for cortex m0 
     PUT32(SYST_CSR, 0x00000004);
-    PUT32(SYST_RVR, 100000-1);
-    PUT32(SYST_CVR, 100000-1);
+    PUT32(SYST_RVR, 125-1);
+    PUT32(SYST_CVR, 125-1);
     PUT32(SYST_CSR, 0x00000005);
 }

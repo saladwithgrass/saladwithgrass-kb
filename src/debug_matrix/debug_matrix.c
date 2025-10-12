@@ -1,5 +1,7 @@
 #include "debug_matrix.h"
 #include "../RP2040/gpio/gpio.h"
+#include <stddef.h>
+#include "../RP2040/clocks/clocks.h"
 
 void display_number(uint8_t number) {
     init_gpio_sio(DBG_MATRIX_ALL_PINS, 0);
@@ -18,4 +20,16 @@ void display_number(uint8_t number) {
     
 void configure_pins_debug_matrix() {
 
+}
+
+void blink_and_display_error(Error err) {
+    volatile size_t i;
+    for (i = 0; i < 10; ++i) {
+        display_number(err);
+        delay_ms(50);
+        display_number(0);
+        delay_ms(50);
+    }
+    display_number(err);
+    while (1) {}
 }

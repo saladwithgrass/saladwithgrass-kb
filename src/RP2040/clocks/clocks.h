@@ -5,7 +5,8 @@
 #define XOSC_HZ         12000000UL
 #define DEFAULT_SYS_HZ  125000000UL
 
-void delay(unsigned int x);
+void delay_ms(unsigned int ms);
+void delay_us(unsigned int us);
 
 void init_xosc();
 void set_ref_clk_to_xosc( void );

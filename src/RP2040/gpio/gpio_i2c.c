@@ -4,7 +4,6 @@
 #include "../../debug_matrix/debug_matrix.h"
 #include "../pads/pads.h"
 #include "../../errors/errors.h"
-#include <cstdint>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -65,7 +64,7 @@ void configure_I2C0() {
         // sda_tx_hold_count = freq_in [cycles/s] * 300ns * (1s / 1e9ns)
         // Reduce 300/1e9 to 3/1e7 to avoid numbers that don't fit in uint.
         // Add 1 to avoid division truncation.
-        sda_tx_hold_count = ((DEFAULT_SYS_HZ * 3) / 10000000) + 1;
+        sda_tx_hold_count = ( (DEFAULT_SYS_HZ * 3) / 10000000) + 1;
     } else {
         // sda_tx_hold_count = freq_in [cycles/s] * 120ns * (1s / 1e9ns)
         // Reduce 120/1e9 to 3/25e6 to avoid numbers that don't fit in uint.
@@ -73,11 +72,15 @@ void configure_I2C0() {
         sda_tx_hold_count = ((DEFAULT_SYS_HZ * 3) / 25000000) + 1;
     }
     
+    write_masked(I2C0_CON, I2C_CON_SPEED_FAST << 1, I2C_CON_SPEED_BITS);
+
     PUT32(I2C0_FS_SCL_HCNT, hcnt);
     PUT32(I2C0_FS_SCL_LCNT, lcnt);
-    PUT32(I2C0_FS_SPKLEN, lcnt < 16 ? 1 : lcnt / 16);
+    PUT32(I2C0_FS_SPKLEN, (lcnt < 16) ? 1 : (lcnt / 16));
 
+    write_masked(I2C0_SDA_HOLD, sda_tx_hold_count, I2C0_SDA_HOLD_IC_SDA_TX_HOLD_BITS);
     enable_i2c();
+
 }
 
 void set_I2C0_TAR(uint32_t target_address) {
@@ -114,10 +117,10 @@ Error configure_pads_I2C0(uint32_t sda_pin, uint32_t scl_pin){
      */ 
     pads_enable_pullup(sda_pin);
     pads_enable_pullup(scl_pin);
-    pads_disable_fast_slewrate(sda_pin);
-    pads_disable_fast_slewrate(scl_pin);
-    pads_enable_schmidt(sda_pin);
-    pads_enable_schmidt(scl_pin);
+    // pads_disable_fast_slewrate(sda_pin);
+    // pads_disable_fast_slewrate(scl_pin);
+    // pads_enable_schmidt(sda_pin);
+    // pads_enable_schmidt(scl_pin);
 
     return ERROR_OK;
 }
@@ -154,7 +157,7 @@ Error configure_pins_I2C0(uint32_t sda_pin, uint32_t scl_pin) {
 Error write_byte_i2c(uint32_t target_address, uint8_t msg) {
     uint8_t copy = msg;
     // XXX OOOO SCARY MEMORY PROBLEMS
-    return write_bytearray_i2c(target_address, &msg, 1);
+    return write_bytearray_i2c(target_address, &copy, 1);
 }
 
 Error write_bytearray_i2c(uint32_t target_address, uint8_t *msg, size_t msg_len) {
@@ -162,8 +165,9 @@ Error write_bytearray_i2c(uint32_t target_address, uint8_t *msg, size_t msg_len)
 
     if (!(GET32(I2C0_ENABLE_STATUS) & 1))
         return ERROR_HARDWARE_MISCONFIGURATION;
-
+    disable_i2c();
     set_I2C0_TAR(target_address);
+    enable_i2c();
 
     size_t iter;
     uint8_t is_first;
@@ -176,17 +180,34 @@ Error write_bytearray_i2c(uint32_t target_address, uint8_t *msg, size_t msg_len)
                 ((!!is_first) << 10) |
                 ((!!is_last) << 9)
         );
-        timeout = 10000;
-        while (timeout > 0 && 
-               GET32(I2C0_RAW_INTR_STAT) & 0x10) {
+        timeout = 1000;
+        while (timeout >= 0 && 
+               !(GET32(I2C0_RAW_INTR_STAT) & 0x10)) {
+            display_number(1000-timeout);
+            delay_ms(100);
             timeout--;
         }
+        if (timeout < 0) {
+            for (int i = 0; i < 10; ++i){ 
+                display_number(255);
+                delay_ms(100);
+                display_number(0);
+                delay_ms(100);
+            }
+        }
     }
-
-    timeout = 10000;
+    timeout = 1000;
     while (timeout > 0 && 
-           !(I2C0_RAW_INTR_STAT & 0x200)) {
+           !(GET32(I2C0_RAW_INTR_STAT) & 0x200)) {
         timeout--;
+    }
+    if (timeout < 0) {
+        for (int i = 0; i < 10; ++i){ 
+            display_number(255);
+            delay_ms(100);
+            display_number(0);
+            delay_ms(100);
+        }
     }
     // // write last byte with STOP enabled
     // PUT32(I2C0_DATA_CMD, msg[iter] | (1<<9));

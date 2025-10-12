@@ -1,6 +1,7 @@
 #ifndef DEBUG_MATRIX_H_
 #define DEBUG_MATRIX_H_
 #include <stdint.h>
+#include "../errors/errors.h"
 
 #define N_BITS 8
 
@@ -29,5 +30,6 @@
 
 void display_number(uint8_t number);
 void configure_pins_debug_matrix();
+void blink_and_display_error(Error err);
 
 #endif // !DEBUG_MATRIX_H_
