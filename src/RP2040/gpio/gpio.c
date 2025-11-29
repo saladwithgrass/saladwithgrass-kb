@@ -7,10 +7,10 @@
 void init_IOBANK0(void) {
 
     unreset_subsystem(RESET_IO_BANK0);
-
     unreset_subsystem(RESET_PADS_BANK0);
     // unreset pin pads
     PUT32(RESETS_RESET_CLR, (1<<8)); //PADS_BANK0
+    PUT32(RESETS_RESET_CLR, (1<<5));
 
     // wait for pads to clear
     while (1) {
