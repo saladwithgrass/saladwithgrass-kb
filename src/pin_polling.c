@@ -17,27 +17,28 @@ static size_t last_added = 0;
 static key_position registered_presses[MAX_CONCURRENT_KEYS];
 
 void poll_row(uint8_t row) {
-    uint32_t mask = 1 << row ;
+    uint8_t row_pin = ROW_PINS[row];
+    uint32_t mask = 1 << row_pin ;
     gpio_set_mask(mask);
-    // gpio_clr_mask(~mask);
+    // FIXME erases all other gpio writes
+    gpio_clr_mask(~mask);
+
     sleep_us(US_PER_ROW);
     bool key_pressed = false;
-    for (int col_id = 0; col_id < N_COLS; ++col_id) {
-        if (gpio_get(COL_PINS[col_id])) {
-            register_press(row, COL_PINS[col_id]);
+    for (int col = 0; col < N_COLS; ++col) {
+        if (gpio_get(COL_PINS[col])) {
+            register_press(row, col);
             key_pressed = true;
         }
     }
-    board_led_write(key_pressed);
-    // gpio_clr_mask(~mask);
+
+    gpio_clr_mask(mask);
 }
 
 void poll_whole_kb() {
     clear_presses();
-    for (int row_id = 0; row_id < N_ROWS; ++row_id) {
-        // board_led_write(true);
-        poll_row(ROW_PINS[row_id]);
-        // board_led_write(false);
+    for (int row = 0; row < N_ROWS; ++row) {
+        poll_row(row);
     }
 }
 
@@ -52,7 +53,6 @@ void clear_presses() {
 void register_press(uint8_t row, uint8_t col) {
     // FIXME this is kind of ugly and there should be a more proper processing
     last_added %= MAX_CONCURRENT_KEYS;
-    board_led_on();
 
     registered_presses[last_added].row = row;
     registered_presses[last_added].col = col;

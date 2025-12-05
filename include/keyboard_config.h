@@ -9,9 +9,9 @@
 #define MAX_CONCURRENT_KEYS 6
 
 static const uint8_t ROW_PINS[N_ROWS] = {
-    
     26, 27, 23
 };
+
 
 static const uint8_t COL_PINS[N_COLS] = {
     0, 1, 2

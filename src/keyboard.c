@@ -1,6 +1,7 @@
 #include "keyboard.h"
 
 #include "bsp/board_api.h"
+#include "class/hid/hid.h"
 #include "keyboard_config.h"
 #include "keymap.h"
 #include "pin_polling.h"
@@ -16,8 +17,11 @@ bool poll_keyboard(uint8_t keycodes[MAX_CONCURRENT_KEYS]) {
     bool return_val = false;
     for (int i = 0; i < MAX_CONCURRENT_KEYS; ++i) {
         keycodes[i] = get_keycode(positions[i]);
-        return_val = return_val || (keycodes[i] != 0);
+        // return_val = return_val || (keycodes[i] != 0);
+        if (keycodes[i] == 0)
+            return_val = true;
     }
+    // board_led_write(return_val);
     return return_val;
 }
 
@@ -42,11 +46,9 @@ void hid_task(void) {
     } else {
         // Send the 1st of report chain, the rest will be sent by tud_hid_report_complete_cb()
         if (any_press) {
-            board_led_write(true);
             send_hid_report(REPORT_ID_KEYBOARD, keycodes);
         }
         else {
-            board_led_write(false);
             send_hid_report(REPORT_ID_KEYBOARD, NULL);
         }
     }
