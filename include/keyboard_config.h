@@ -6,10 +6,10 @@
 #define N_COLS 3
 #define MAX_CONCURRENT_KEYS 6
 
-const uint8_t ROW_PINS[N_ROWS] = {};
-const uint8_t COL_PINS[N_COLS] = {};
+static const uint8_t ROW_PINS[N_ROWS] = {0, 0, 0};
+static const uint8_t COL_PINS[N_COLS] = {0, 0, 0};
 
-const uint32_t US_PER_ROW = 800;
+static const uint32_t US_PER_ROW = 800;
 
 void configure_keyboard();
 

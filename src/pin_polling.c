@@ -1,10 +1,15 @@
-#include <hardware/gpio.h>
-#include <pico.h>
 #include "pin_polling.h"
 #include "keyboard_config.h"
+
+#include <hardware/gpio.h>
+#include <pico.h>
 #include <pico/time.h>
 #include <stddef.h>
 #include <stdint.h>
+
+extern const uint8_t ROW_PINS[N_ROWS];
+extern const uint8_t COL_PINS[N_COLS];
+extern const uint32_t US_PER_ROW;
 
 static size_t last_added = 0;
 static key_position registered_presses[MAX_CONCURRENT_KEYS];

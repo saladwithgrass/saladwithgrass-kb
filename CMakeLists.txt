@@ -14,11 +14,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(FAMILY rp2040)
 set(BOARD pico_sdk)
 
-
 add_executable(
     ${PROJECT_NAME}
 )
 
+target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_sources(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/keyboard_config.c
@@ -26,8 +26,6 @@ target_sources(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/pin_polling.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/keymap.c
 )
-
-target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 target_link_libraries(
     ${PROJECT_NAME} PUBLIC 
