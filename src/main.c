@@ -23,15 +23,22 @@
  *
  */
 
+#include <hardware/gpio.h>
+#include <hardware/structs/io_bank0.h>
 #include <pico/stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "bsp/board_api.h"
+#include "keyboard_config.h"
+#include "pin_polling.h"
 #include "tusb.h"
 
 #include "usb_descriptors.h"
+#include "keyboard.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
@@ -53,8 +60,7 @@ static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 void led_blinking_task(void);
 void hid_task(void);
 
-/*------------- MAIN -------------*/
-int main(void) {
+int main_2(){
     stdio_init_all();
     board_init();
 
@@ -68,6 +74,51 @@ int main(void) {
     if (board_init_after_tusb) {
         board_init_after_tusb();
     }
+    uint8_t row = ROW_PINS[0];
+    uint8_t col = COL_PINS[0];
+    // gpio_set_function(row, GPIO_FUNC_SIO)
+    gpio_init(row);
+    gpio_init(col);
+    
+    gpio_set_dir(row, true);
+    gpio_set_dir(col, false);
+    gpio_set_mask(1<<row);
+    while (1) {
+        if (gpio_get(col)) {
+            board_led_on();
+        } else {
+            board_led_off();
+        }
+    }
+
+}
+
+/*------------- MAIN -------------*/
+int main(void) {
+    // main_2();
+    // return 0;
+    stdio_init_all();
+    board_init();
+
+    // init device stack on configured roothub port
+    tusb_rhport_init_t dev_init = {
+        .role = TUSB_ROLE_DEVICE,
+        .speed = TUSB_SPEED_AUTO
+    };
+    tusb_init(BOARD_TUD_RHPORT, &dev_init);
+
+    if (board_init_after_tusb) {
+        board_init_after_tusb();
+    }
+    configure_keyboard();
+
+    board_led_on();
+    board_delay(1000);
+    board_led_off();
+
+    // while (1) {
+    //     poll_whole_kb();
+    // }
 
     while (1) {
         tud_task(); // tinyusb device task
@@ -76,6 +127,8 @@ int main(void) {
         hid_task();
     }
 }
+
+/*
 
 //--------------------------------------------------------------------+
 // Device callbacks
@@ -197,6 +250,7 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint16_
         send_hid_report(next_report_id, board_button_read());
     }
 }
+*/
 
 // Invoked when received GET_REPORT control request
 // Application must fill buffer report's content and return its length.
@@ -247,6 +301,7 @@ void tud_hid_set_report_cb(
     }
 }
 
+/*
 //--------------------------------------------------------------------+
 // BLINKING TASK
 //--------------------------------------------------------------------+
@@ -266,3 +321,4 @@ void led_blinking_task(void)
     led_state = 1 - led_state; // toggle
 }
 
+*/

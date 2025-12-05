@@ -1,3 +1,5 @@
+#include "keyboard.h"
+
 #include "bsp/board_api.h"
 #include "keyboard_config.h"
 #include "keymap.h"
@@ -5,7 +7,19 @@
 #include "tusb.h"
 #include "pico.h"
 #include "usb_descriptors.h"
-#include "keyboard.h"
+#include <stdbool.h>
+#include <stdint.h>
+
+bool poll_keyboard(uint8_t keycodes[MAX_CONCURRENT_KEYS]) {
+    key_position positions[MAX_CONCURRENT_KEYS];
+    poll_and_get_presses(positions);
+    bool return_val = false;
+    for (int i = 0; i < MAX_CONCURRENT_KEYS; ++i) {
+        keycodes[i] = get_keycode(positions[i]);
+        return_val = return_val || (keycodes[i] != 0);
+    }
+    return return_val;
+}
 
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 // tud_hid_report_complete_cb() is used to send the next report after previous one is complete
@@ -17,22 +31,32 @@ void hid_task(void) {
     if ( board_millis() - start_ms < interval_ms) return; // not enough time
     start_ms += interval_ms;
 
-    uint32_t const btn = board_button_read();
+    uint8_t keycodes[MAX_CONCURRENT_KEYS];
+    bool any_press = poll_keyboard(keycodes);
 
     // Remote wakeup
-    if ( tud_suspended() && btn )
-    {
+    if ( tud_suspended() && any_press ) {
         // Wake up host if we are in suspend mode
         // and REMOTE_WAKEUP feature is enabled by host
         tud_remote_wakeup();
-    }else
-    {
+    } else {
         // Send the 1st of report chain, the rest will be sent by tud_hid_report_complete_cb()
-        send_hid_report(REPORT_ID_KEYBOARD, btn);
+        if (any_press) {
+            board_led_write(true);
+            send_hid_report(REPORT_ID_KEYBOARD, keycodes);
+        }
+        else {
+            board_led_write(false);
+            send_hid_report(REPORT_ID_KEYBOARD, NULL);
+        }
     }
 }
 
-static void send_hid_report(uint8_t report_id, key_position presses[MAX_CONCURRENT_KEYS]) {
+
+void send_hid_report(
+        uint8_t report_id, 
+        uint8_t keycodes[MAX_CONCURRENT_KEYS]
+) {
     // skip if hid is not ready yet
     if ( !tud_hid_ready() ) return;
 
@@ -41,14 +65,11 @@ static void send_hid_report(uint8_t report_id, key_position presses[MAX_CONCURRE
                 
                 // use to avoid send multiple consecutive zero report for keyboard
                 static bool has_keyboard_key = false;
-                if (presses != NULL) {
-                    uint8_t keycode[6] = { 0 };
-                    for (int i = 0; i < MAX_CONCURRENT_KEYS; ++i) {
-                        keycode[i] = get_keycode(presses[i]);
-                        has_keyboard_key = has_keyboard_key || (keycode[i] != 0);
-                    }
+
+                if (keycodes != NULL) {
                     // XXX may be a problem with modifier here
-                    tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, keycode);
+                    tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, keycodes);
+                    has_keyboard_key = true;
                 } else {
                    // send empty key report if previously has key pressed
                    if (has_keyboard_key) 
@@ -94,9 +115,10 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint16_
     (void) len;
 
     uint8_t next_report_id = report[0] + 1u;
-
-    if (next_report_id < REPORT_ID_COUNT)
-    {
-        send_hid_report(next_report_id, NULL);
+    static uint8_t keycodes[MAX_CONCURRENT_KEYS];
+    bool any_press = poll_keyboard(keycodes);
+    if (next_report_id < REPORT_ID_COUNT) {
+        send_hid_report(next_report_id, any_press ? keycodes : NULL); // ooooo evil
     }
 }
+

@@ -25,6 +25,7 @@ target_sources(${PROJECT_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/usb_descriptors.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/pin_polling.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/keymap.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/keyboard.c
 )
 
 target_link_libraries(
