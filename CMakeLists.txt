@@ -11,8 +11,8 @@ pico_sdk_init()
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-set(FAMILY rp2040)
-set(BOARD pico_sdk)
+# set(FAMILY rp2040)
+# set(BOARD pico_sdk)
 
 add_executable(
     ${PROJECT_NAME}
@@ -32,4 +32,5 @@ target_link_libraries(
     pico_stdlib pico_unique_id tinyusb_device tinyusb_board 
 )
 
+pico_add_extra_outputs(${PROJECT_NAME})
 
