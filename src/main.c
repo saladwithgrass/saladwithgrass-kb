@@ -85,7 +85,6 @@ int main(void) {
     }
 }
 
-/*
 
 //--------------------------------------------------------------------+
 // Device callbacks
@@ -118,6 +117,7 @@ void tud_resume_cb(void) {
 // USB HID
 //--------------------------------------------------------------------+
 
+/* 
 static void send_hid_report(uint8_t report_id, uint32_t btn) {
     // skip if hid is not ready yet
     if ( !tud_hid_ready() ) return;
@@ -166,6 +166,7 @@ static void send_hid_report(uint8_t report_id, uint32_t btn) {
         default: break;
     }
 }
+*/
 
 // Invoked when received GET_REPORT control request
 // Application must fill buffer report's content and return its length.
